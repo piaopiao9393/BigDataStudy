@@ -68,4 +68,31 @@ public class Q1SumDeptSalary extends Configured implements Tool{
 			}
 		}
 	}
+	public static class Reduce extends Reducer<Text,Text,Text,LongWritable>{
+		public void reduce(Text key,Iterable<Text> values,Context context) throws IOException,InterruptedException{
+
+			//对同一部门的员工工资求和
+			long sumSalary = 0;
+			for(Text val : values){
+				sumSalary += Long.parseLong(val.toString());
+			}
+			//输出key为部门名称和value为该部门员工工资总和
+			context.write(key,new LongWritable(sumSalary));
+		}
+	}
+	@Override
+	public int run(String[] args) throws Exception{
+		//实例化作业对象，设置名称、Mapper和Reducer类
+		Job job = new Job(getConf(),"Q1SumDeptSalary");
+		job.setJobName("Q1SumDeptSalary");
+		job.setJarByClass(Q1SumDeptSalary.class);
+		job.setMapperClass(MapClass.class);
+		job.setReducerClass(Reduce.class);
+		//设置输入格式类
+		job.setInputFormatClass(TextInputFormat.class);
+		//设置输出格式类
+		job.setOutputFormatClass(TextOutputFormat.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(Text.class);
+	}
 }
